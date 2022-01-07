@@ -1,53 +1,10 @@
-#ifndef TREE_H
-#define TREE_H
+#pragma once
 
 #include <iostream>
 #include <limits>
 
 #ifdef USE_MPI
 #include <mpi.h>
-#endif
-
-#if !defined(DOUBLE_PRECISION)
-/**
- * @def
- * @brief The datatype of the k-d tree.
- */
-#define data_type float
-/**
- * @def
- * @brief A function used to convert from string to `data_type`.
- */
-#define string_converter std::stof
-
-#ifdef USE_MPI
-/**
- * @def
- * @brief MPI version of `data_type`.
- */
-#define mpi_data_type MPI_FLOAT
-#endif
-
-#else
-/**
- * @def
- * @brief The datatype of the k-d tree.
- */
-#define data_type double
-/**
- * @def
- * @brief A function used to convert from string to `data_type`.
- */
-#define string_converter std::stod
-
-#ifdef USE_MPI
-/**
- * @def
- * @brief MPI version of `data_type`.
- */
-#define mpi_data_type MPI_DOUBLE
-#endif
-
 #endif
 
 /**
@@ -75,15 +32,17 @@
  * @tparam T The type of the values which compose the points in the
  *          dataset.
  */
-template <typename T> class KNode {
-  T *data;  /**< Data point associated with this node, as 1D array. */
-  int dims; /**< Number of dimensions of the data point (i.e. size of `data`).
-             */
+template <typename T> 
+class KNode 
+{
+    T *data;  /**< Data point associated with this node, as 1D array. */
+    int dims; /**< Number of dimensions of the data point (i.e. size of `data`).
+                */
 
-  KNode<T> *left, /**< Root of the left branch originating from this node. */
-      *right;     /**< Root of the right branch originating from this node. */
+    KNode<T> *left; /**< Root of the left branch originating from this node. */
+    KNode<T> *right;     /**< Root of the right branch originating from this node. */
 
-  bool is_root; /**< If `true`, this node is considered to be the root node, and
+    bool is_root; /**< If `true`, this node is considered to be the root node, and
                       therefore is responsible to delete the dataset. */
 
 public:
@@ -100,8 +59,14 @@ public:
    * @param root The user should pass `true` if this node is the root node,
    *           `false` otherwise.
    */
-  KNode(data_type *d, int dms, KNode<T> *l, KNode<T> *r, bool root)
-      : data{d}, dims{dms}, left{l}, right{r}, is_root{root} {}
+    KNode(T *d, int dms, KNode<T> *l, KNode<T> *r, bool root)
+    : 
+        data{d}, 
+        dims{dms}, 
+        left{l}, 
+        right{r}, 
+        is_root{root} 
+    {}
 
   /**
    * @brief Destroy the KNode object, and also the dataset if `is_root` is
@@ -134,5 +99,3 @@ public:
    */
   KNode<T> *get_right() const { return right; }
 };
-
-#endif // TREE_H

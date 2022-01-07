@@ -1,4 +1,9 @@
 #include "utils.h"
+#include <exception>
+
+int select_splitting_dimension(int depth, int dims) {
+  return depth % dims;
+}
 
 int bigger_powersum_of_two(int n) {
   int base = 1;
@@ -22,29 +27,47 @@ int smaller_powersum_of_two(int n) {
 
 // transform the given DataPoint array in a 1D array such that `dims` contiguous
 // items constitute a data point
-data_type *unpack_array(DataPoint *array, int size, int dims) {
-  data_type *unpacked = new data_type[size * dims];
-  for (int i = 0; i < size; ++i) {
-    data_type *d = array[i].data();
-    std::memcpy(unpacked + i * dims, d, dims * sizeof(data_type));
-  }
-  return unpacked;
+template <typename T>
+std::vector<T> unpack_array(std::vector<DataPoint<T>> const& array) 
+{
+
+    int numDataPts = array.size();
+    int dim = array[0].size();
+
+    // We must have at least some data
+     if (numDataPts == 0 || dim == 0)
+        throw std::invalid_argument{"Either zero length or zero dimension"};
+
+    std::vector<T> unpacked(numDataPts * dim);
+    for (int dp = 0; dp < numDataPts; ++dp)
+    {
+        for (int idx = 0; idx < dim; ++idx)
+        {
+            unpacked[dp * dim + idx] = array[dp][idx];
+        }
+    }
+    return unpacked;
 }
 
 // unpack an array which may contain uninitialized items
-data_type *unpack_risky_array(DataPoint *array, int size, int dims,
-                              bool *initialized) {
-  data_type *unpacked = new data_type[size * dims];
-  for (int i = 0; i < size; ++i) {
-    if (initialized[i]) {
-      data_type *d = array[i].data();
-      std::memcpy(unpacked + i * dims, d, dims * sizeof(data_type));
-    } else {
-      for (int j = 0; j < dims; ++j) {
-        unpacked[i * dims + j] = EMPTY_PLACEHOLDER;
-      }
+template <typename T>
+std::vector<T> unpack_risky_array(std::vector<DataPoint<T>> const& array, bool *initialized) 
+{
+    int numDataPts = array.size();
+    int dim = array[0].size();
+
+    // We must have at least some data
+     if (numDataPts == 0 || dim == 0)
+        throw std::invalid_argument{"Either zero length or zero dimension"}; 
+ 
+    std::vector<T> unpacked(numDataPts * dim);
+    for (int dp = 0; dp < numDataPts; ++dp) 
+    {
+        for (int idx = 0; idx < dim; ++idx)
+        {
+            unpacked[dp * dim + idx] = initialized[dp] ? array[dp][idx] : std::numeric_limits<int>::min();
+        }
     }
-  }
   return unpacked;
 }
 
@@ -58,7 +81,8 @@ data_type *unpack_risky_array(DataPoint *array, int size, int dims,
 
   Remember to add a split point before this function call (if you need to).
 */
-void rearrange_branches(data_type *dest, data_type *branch1, data_type *branch2,
+template <typename T>
+void rearrange_branches(T *dest, T *branch1, T *branch2,
                         int branches_size, int dims) {
   int already_added = 0;
   // number of nodes in each branch (left and right)at the current level of
@@ -66,13 +90,13 @@ void rearrange_branches(data_type *dest, data_type *branch1, data_type *branch2,
   int nodes = 1;
   while (already_added < 2 * branches_size) {
     // we put into the three what's inside the left subtree
-    std::memcpy(dest + already_added * dims, branch1,
-                nodes * dims * sizeof(data_type));
+    memcpy(dest + already_added * dims, branch1,
+                nodes * dims * sizeof(T));
     branch1 += nodes * dims;
 
     // we put into the three what's inside the right subtree
-    std::memcpy(dest + (nodes + already_added) * dims, branch2,
-                nodes * dims * sizeof(data_type));
+    memcpy(dest + (nodes + already_added) * dims, branch2,
+                nodes * dims * sizeof(T));
     branch2 += nodes * dims;
 
     // we just added left and right branch
@@ -96,7 +120,8 @@ void rearrange_branches(data_type *dest, data_type *branch1, data_type *branch2,
     - start_offset contains the offset (starting from current_level_start) for
         the root node of the subtree represented by this recursive call.
 */
-KNode<data_type> *convert_to_knodes(data_type *tree, int size, int dims,
+template <typename T>
+KNode<T> *convertToKnodes(std::vector<T> const& tree, int size, int dims,
                                     int current_level_start,
                                     int current_level_nodes, int start_offset) {
   int next_level_start = current_level_start + current_level_nodes * dims;
@@ -109,23 +134,11 @@ KNode<data_type> *convert_to_knodes(data_type *tree, int size, int dims,
     auto right = convert_to_knodes(tree, size, dims, next_level_start,
                                    next_level_nodes, next_start_offset + 1);
 
-    return new KNode<data_type>(tree + current_level_start +
+    return new KNode<T>(tree + current_level_start +
                                     start_offset * dims,
                                 dims, left, right, current_level_start == 0);
   } else
-    return new KNode<data_type>(tree + current_level_start +
+    return new KNode<T>(tree + current_level_start +
                                     start_offset * dims,
                                 dims, nullptr, nullptr, false);
-}
-
-int sort_and_split(DataPoint *array, int size, int axis) {
-  // the second part of median_idx is needed to unbalance the split towards the
-  // left region (which is the one which may parallelize with the highest
-  // probability).
-  int median_idx = size / 2 - 1 * ((size + 1) % 2);
-  std::nth_element(array, array + median_idx, array + size,
-                   DataPointCompare(axis));
-  // if size is 2 we want to return the first element (the smallest one), since
-  // it will be placed into the first empty spot in serial_split
-  return median_idx;
 }

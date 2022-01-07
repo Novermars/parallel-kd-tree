@@ -1,11 +1,8 @@
-#ifndef UTILS_H
-#define UTILS_H
-
-#include "data_point.h"
-#include "tree.h"
+#pragma once
+#include "datapoint.h"
+#include "knode.h"
 
 #include <algorithm>
-#include <cstring>
 #include <limits>
 
 /**
@@ -50,7 +47,8 @@ int smaller_powersum_of_two(int n);
  * @param dims  Number of components for each data point.
  * @return data_type* A 1D array of size `size*dims`.
  */
-data_type *unpack_array(DataPoint *array, int size, int dims);
+template <typename T>
+std::vector<T> unpack_array(std::vector<DataPoint<T>> const& array);
 
 /**
  * @brief Transform the given array (which may contain uninitialized values)
@@ -72,8 +70,8 @@ data_type *unpack_array(DataPoint *array, int size, int dims);
  *                      `array` has been initialized.
  * @return data_type* A 1D array of size `size*dims`.
  */
-data_type *unpack_risky_array(DataPoint *array, int size, int dims,
-                              bool *initialized);
+template <typename T>
+std::vector<T> unpack_risky_array(std::vector<DataPoint<T>> const& array, bool *initialized);
 
 /**
  * @brief Rearrange `branch1`, `branch2` into a single array.
@@ -95,7 +93,8 @@ data_type *unpack_risky_array(DataPoint *array, int size, int dims,
  *                        dimensions).
  * @param dims    Number of dimensions for each data point.
  */
-void rearrange_branches(data_type *dest, data_type *branch1, data_type *branch2,
+template <typename T>
+void rearrange_branches(T *dest, T *branch1, T *branch2,
                         int branches_size, int dims);
 
 /**
@@ -113,29 +112,8 @@ void rearrange_branches(data_type *dest, data_type *branch1, data_type *branch2,
  *                      located the root node of the subtree represented by this
  *                      recursive call.
  */
-KNode<data_type> *convert_to_knodes(data_type *tree, int size, int dims,
+template <typename T>
+KNode<T> *convertToKnodes(std::vector<T> const& tree, int size, int dims,
                                     int current_level_start,
                                     int current_level_nodes, int start_offset);
 
-/**
- * @brief Select an axis to be used for splitting a branch of the tree.
- *
- * @param depth The depth of the tree at this point, might be used in order
- *                to balance the choice of the axes.
- */
-inline int select_splitting_dimension(int depth, int dims) {
-  return depth % dims;
-}
-
-/**
-   Sort the given array such that the element in the middle is exactly the
-   median with respect to the given axis, and all the items before and
-   after are respectively lower/greater than that item.
-
-   @param array Array to be sorted.
-   @param size Number of items in array.
-   @param axis Axis along which the sorting must be done.
-*/
-int sort_and_split(DataPoint *array, int size, int axis);
-
-#endif // UTILS_H

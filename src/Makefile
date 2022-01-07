@@ -17,21 +17,10 @@
 #		   	           files)
 
 .DEFAULT_GOAL := output
-FLAGS = -std=c++14 -Wall -Wextra
-UTILITIES = data_point.cpp main.cpp file_utils.cpp tree_printer.cpp utils.cpp
-
-# OpenMP or MPI?
-ifeq ($(src), mpi)
-	SRC = kdtree_mpi.cpp
-	ADDITIONAL_FLAGS = -D USE_MPI
-	COMPILER = mpic++
-	OUT = tree_mpi.x
-else
-	SRC = kdtree_openmp.cpp
-	ADDITIONAL_FLAGS = -fopenmp
-	COMPILER = g++
-	OUT = tree_openmp.x
-endif
+FLAGS = -std=c++20 -Wall -Wextra
+UTILITIES = fileutils.cpp treeprinter.cpp utils.cpp kdtree.cpp main.cpp
+COMPILER = g++
+OUT = KDTreeBuilder
 
 compile:
 	$(COMPILER) $(FLAGS) $(ADDITIONAL_FLAGS) -O3 $(UTILITIES) $(SRC) -o $(OUT)

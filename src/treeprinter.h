@@ -1,7 +1,7 @@
-#include "tree.h"
-#include <iostream>
+#pragma once
 
-template class KNode<data_type>;
+#include "knode.h"
+#include <iostream>
 
 /**
  * @brief Auxiliary function which pretty-prints a k-d tree.
@@ -14,4 +14,5 @@ template class KNode<data_type>;
  * @param node The root of the k-d tree to be printed.
  * @return std::ostream& The output file descriptor.
  */
-std::ostream &operator<<(std::ostream &os, const KNode<data_type> &node);
+template <typename T>
+std::ostream &operator<<(std::ostream &os, const KNode<T> &node);

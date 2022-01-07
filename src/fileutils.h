@@ -1,4 +1,5 @@
-#include "tree.h"
+#pragma once
+#include "knode.h"
 
 #include <cstring>
 #include <fstream>
@@ -7,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <tuple>
 
 /**
  * @brief Extract a dataset of k-dimensional data points from a CSV file.
@@ -27,10 +29,11 @@
  * @param dims     A pointer to a variable which is going to contain the number
  *                  of components for each data point when this function returns
  *                  succesfully.
- * @return data_type* A 1D array whose size is `size*dims`, where `dims`
+ * @return A 1D array whose size is `size*dims`, where `dims`
  *                      consecutive items represent a data point.
  */
-data_type *read_file(const std::string &filename, int *size, int *dims);
+template <typename T>
+std::tuple<std::vector<T>, int> readFile(const std::string &filename);
 
 /**
  * @brief Write a k-d tree to a CSV file.
@@ -46,31 +49,4 @@ data_type *read_file(const std::string &filename, int *size, int *dims);
  * @param dims     Number of components per each data point.
  */
 template <typename T>
-void write_file(const std::string &filename, KNode<T> *root, int dims) {
-  std::ofstream outdata;
-  outdata.open(filename, std::fstream::out);
-  if (!outdata) {
-    throw std::invalid_argument("File not found.");
-  }
-
-  std::queue<KNode<T> *> to_visit;
-  to_visit.push(root);
-
-  while (to_visit.size() > 0) {
-    KNode<T> *node = to_visit.front();
-    to_visit.pop();
-
-    for (int i = 0; i < dims; ++i) {
-      outdata << node->get_data(i);
-      if (i < dims - 1)
-        outdata << ",";
-    }
-
-    if (node->get_left() != nullptr)
-      to_visit.push(node->get_left());
-    if (node->get_right() != nullptr)
-      to_visit.push(node->get_right());
-
-    outdata << std::endl;
-  }
-}
+void write_file(const std::string &filename, KNode<T> *root, int dims);
