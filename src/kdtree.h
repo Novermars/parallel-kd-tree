@@ -32,6 +32,7 @@ private:
     int selectSplittingDimension(int depth, int dims) const;
     template <typename Iterator>
     int sortAndSplit(Iterator start, int size, int axis);
+    int biggerPowerSumOfTwo(int num);
     std::ostream& print_node_values(std::ostream &os,
                                     const KNode<T> &node) const;
     std::ostream &print_tree(std::ostream &os, const KNode<T> &node,
@@ -65,7 +66,7 @@ void KDTree<T>::generateKDTree(std::vector<T> const& data)
                            data[dp * d_dimension + 2] };
     }
 
-    int splitsTreeSize = bigger_powersum_of_two(d_size);
+    int splitsTreeSize = biggerPowerSumOfTwo(d_size);
     std::vector<DataPoint<T>> splitsTree(splitsTreeSize);
 
     std::vector<bool> initialized(splitsTreeSize, false);
@@ -102,6 +103,7 @@ void KDTree<T>::buildTree(Iterator start, int size,
     branchStartingIndex *= 2;
     depth += 1;
 
+    #pragma omp task default(shared) final(no_more_new_threads)
     buildTree(start + splitPointIdx + 1, size - splitPointIdx - 1, depth,
                regionWidth, regionStartIndex, branchStartingIndex + 1,
                initialized, splitsTree);
@@ -183,4 +185,15 @@ std::ostream &KDTree<T>::print_tree(std::ostream &os, const KNode<T> &node,
     if (right)
         print_tree(os, *right, prefix + (isLeft ? "│   " : "    "), false);
     return os;
+}
+
+template <typename T>
+int KDTree<T>::biggerPowerSumOfTwo(int num) {
+    int base = 1;
+    int sum = 0;
+    while (sum < num) {
+        sum += base;
+        base *= 2;
+    }
+    return sum;
 }
