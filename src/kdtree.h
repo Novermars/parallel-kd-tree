@@ -3,6 +3,7 @@
 #include "knode.h"
 #include "datapoint.h"
 #include "fileutils.h"
+#include "treeprinter.h"
 
 template <typename T>
 class KDTree
@@ -14,6 +15,7 @@ class KDTree
 public:
     KDTree(std::vector<T> const& data, int dimension);
     KNode<T>* getRoot();
+    void print();
     //template <typename TS>
     //friend std::ostream &operator<<(std::ostream &os, const KDTree<TS> &kdTree);
 private:
@@ -124,9 +126,8 @@ int KDTree<T>::sortAndSplit(Iterator start, int size, int axis)
   return median_idx;
 }
 
-/*template <typename TS>
-std::ostream &operator<<(std::ostream &os, const KDTree<TS> &kdTree)
+template <typename T>
+void KDTree<T>::print()
 {
-    return print_tree(os, kdTree.getRoot(), "", false);
-    
-}*/
+    print_tree<double>(std::cout, *d_root, "", false);    
+}
