@@ -3,9 +3,6 @@
 #include <iostream>
 #include <limits>
 
-#ifdef USE_MPI
-#include <mpi.h>
-#endif
 
 /**
  * @class
@@ -59,7 +56,7 @@ public:
    * @param root The user should pass `true` if this node is the root node,
    *           `false` otherwise.
    */
-    KNode(T *d, int dms, KNode<T> *l, KNode<T> *r, bool root)
+    KNode(T* d, int dms, KNode<T> *l, KNode<T> *r, bool root)
     : 
         data{d}, 
         dims{dms}, 

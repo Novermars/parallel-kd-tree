@@ -70,8 +70,27 @@ std::vector<T> unpack_array(std::vector<DataPoint<T>> const& array);
  *                      `array` has been initialized.
  * @return data_type* A 1D array of size `size*dims`.
  */
+
 template <typename T>
-std::vector<T> unpack_risky_array(std::vector<DataPoint<T>> const& array, bool *initialized);
+std::vector<T> unpack_risky_array(std::vector<DataPoint<T>> const& array, std::vector<bool> const& initialized) 
+{
+    int numDataPts = array.size();
+    int dim = array[0].size();
+
+    // We must have at least some data
+     if (numDataPts == 0 || dim == 0)
+        throw std::invalid_argument{"Either zero length or zero dimension"}; 
+ 
+    std::vector<T> unpacked(numDataPts * dim);
+    for (int dp = 0; dp < numDataPts; ++dp) 
+    {
+        for (int idx = 0; idx < dim; ++idx)
+        {
+            unpacked[dp * dim + idx] = initialized[dp] ? array[dp][idx] : std::numeric_limits<int>::min();
+        }
+    }
+  return unpacked;
+}
 
 /**
  * @brief Rearrange `branch1`, `branch2` into a single array.
@@ -112,8 +131,27 @@ void rearrange_branches(T *dest, T *branch1, T *branch2,
  *                      located the root node of the subtree represented by this
  *                      recursive call.
  */
-template <typename T>
-KNode<T> *convertToKnodes(std::vector<T> const& tree, int size, int dims,
+template <typename T, typename Iterator>
+KNode<T> *convertToKnodes(Iterator tree, int size, int dims,
                                     int current_level_start,
-                                    int current_level_nodes, int start_offset);
+                                    int current_level_nodes, int start_offset) 
+{
+    int next_level_start = current_level_start + current_level_nodes * dims;
+    int next_level_nodes = current_level_nodes * 2;
+    int next_start_offset = start_offset * 2;
+
+    if (next_level_start < size * dims) {
+        auto left = convertToKnodes<T>(tree, size, dims, next_level_start,
+                                    next_level_nodes, next_start_offset);
+        auto right = convertToKnodes<T>(tree, size, dims, next_level_start,
+                                    next_level_nodes, next_start_offset + 1);
+
+        return new KNode<T>(&(*tree) + current_level_start +
+                                        start_offset * dims,
+                                    dims, left, right, current_level_start == 0);
+    } else
+        return new KNode<T>(&(*tree) + current_level_start +
+                                        start_offset * dims,
+                                    dims, nullptr, nullptr, false);
+}
 

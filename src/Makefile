@@ -18,7 +18,7 @@
 
 .DEFAULT_GOAL := output
 FLAGS = -std=c++20 -Wall -Wextra
-UTILITIES = fileutils.cpp treeprinter.cpp utils.cpp kdtree.cpp main.cpp
+UTILITIES = treeprinter.cpp utils.cpp main.cpp
 COMPILER = g++
 OUT = KDTreeBuilder
 

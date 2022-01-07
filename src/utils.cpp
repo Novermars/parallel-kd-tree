@@ -50,26 +50,26 @@ std::vector<T> unpack_array(std::vector<DataPoint<T>> const& array)
 }
 
 // unpack an array which may contain uninitialized items
-template <typename T>
-std::vector<T> unpack_risky_array(std::vector<DataPoint<T>> const& array, bool *initialized) 
-{
-    int numDataPts = array.size();
-    int dim = array[0].size();
+// template <typename T>
+// std::vector<T> unpack_risky_array(std::vector<DataPoint<T>> const& array, std::vector<bool> const& initialized) 
+// {
+//     int numDataPts = array.size();
+//     int dim = array[0].size();
 
-    // We must have at least some data
-     if (numDataPts == 0 || dim == 0)
-        throw std::invalid_argument{"Either zero length or zero dimension"}; 
+//     // We must have at least some data
+//      if (numDataPts == 0 || dim == 0)
+//         throw std::invalid_argument{"Either zero length or zero dimension"}; 
  
-    std::vector<T> unpacked(numDataPts * dim);
-    for (int dp = 0; dp < numDataPts; ++dp) 
-    {
-        for (int idx = 0; idx < dim; ++idx)
-        {
-            unpacked[dp * dim + idx] = initialized[dp] ? array[dp][idx] : std::numeric_limits<int>::min();
-        }
-    }
-  return unpacked;
-}
+//     std::vector<T> unpacked(numDataPts * dim);
+//     for (int dp = 0; dp < numDataPts; ++dp) 
+//     {
+//         for (int idx = 0; idx < dim; ++idx)
+//         {
+//             unpacked[dp * dim + idx] = initialized[dp] ? array[dp][idx] : std::numeric_limits<int>::min();
+//         }
+//     }
+//   return unpacked;
+// }
 
 /*
   This function rearranges branch1 and branch2 into dest such that we first
@@ -120,25 +120,25 @@ void rearrange_branches(T *dest, T *branch1, T *branch2,
     - start_offset contains the offset (starting from current_level_start) for
         the root node of the subtree represented by this recursive call.
 */
-template <typename T>
-KNode<T> *convertToKnodes(std::vector<T> const& tree, int size, int dims,
-                                    int current_level_start,
-                                    int current_level_nodes, int start_offset) {
-  int next_level_start = current_level_start + current_level_nodes * dims;
-  int next_level_nodes = current_level_nodes * 2;
-  int next_start_offset = start_offset * 2;
+// template <typename T>
+// KNode<T> *convertToKnodes(std::vector<T> const& tree, int size, int dims,
+//                                     int current_level_start,
+//                                     int current_level_nodes, int start_offset) {
+//   int next_level_start = current_level_start + current_level_nodes * dims;
+//   int next_level_nodes = current_level_nodes * 2;
+//   int next_start_offset = start_offset * 2;
 
-  if (next_level_start < size * dims) {
-    auto left = convert_to_knodes(tree, size, dims, next_level_start,
-                                  next_level_nodes, next_start_offset);
-    auto right = convert_to_knodes(tree, size, dims, next_level_start,
-                                   next_level_nodes, next_start_offset + 1);
+//   if (next_level_start < size * dims) {
+//     auto left = convert_to_knodes(tree, size, dims, next_level_start,
+//                                   next_level_nodes, next_start_offset);
+//     auto right = convert_to_knodes(tree, size, dims, next_level_start,
+//                                    next_level_nodes, next_start_offset + 1);
 
-    return new KNode<T>(tree + current_level_start +
-                                    start_offset * dims,
-                                dims, left, right, current_level_start == 0);
-  } else
-    return new KNode<T>(tree + current_level_start +
-                                    start_offset * dims,
-                                dims, nullptr, nullptr, false);
-}
+//     return new KNode<T>(tree + current_level_start +
+//                                     start_offset * dims,
+//                                 dims, left, right, current_level_start == 0);
+//   } else
+//     return new KNode<T>(tree + current_level_start +
+//                                     start_offset * dims,
+//                                 dims, nullptr, nullptr, false);
+// }
