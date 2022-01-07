@@ -22,7 +22,6 @@ std::ostream &print_node_values(std::ostream &os,
         break;
         } else
         {
-            auto tmp = node.get_data(i);
             os << node.get_data(i);
         }
     }

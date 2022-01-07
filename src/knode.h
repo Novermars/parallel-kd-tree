@@ -63,8 +63,7 @@ public:
         right{r}, 
         is_root{root} 
     {
-        data.resize(dims);
-        std::copy_n(d, dims, std::begin(data));
+        data.assign(d, d + dims);
     }
 
   /**
@@ -72,7 +71,6 @@ public:
    *         `true`.
    */
   ~KNode() {
-      std::cout << "destructing\n";
       delete left;
       delete right;
   }

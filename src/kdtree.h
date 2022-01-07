@@ -1,9 +1,12 @@
 #pragma once
 
+#include <iosfwd>
+#include <memory>
+
 #include "knode.h"
 #include "datapoint.h"
 #include "fileutils.h"
-#include "treeprinter.h"
+#include "utils.h"
 
 template <typename T>
 class KDTree
@@ -16,7 +19,8 @@ public:
     KDTree(std::vector<T> const& data, int dimension);
     ~KDTree();
     KNode<T>* getRoot();
-    void print();
+    template <typename TS>
+    friend std::ostream& operator<<(std::ostream& os, const KDTree<TS>& kdTree);
 
 private:
     void generateKDTree(std::vector<T> const& data);
@@ -25,9 +29,13 @@ private:
                    int depth, int region_width, int region_start_index, 
                    int branch_starting_index, std::vector<bool>& initialized,
                    std::vector<DataPoint<T>>& splitsTree);
-    int selectSplittingDimension(int depth, int dims);
+    int selectSplittingDimension(int depth, int dims) const;
     template <typename Iterator>
     int sortAndSplit(Iterator start, int size, int axis);
+    std::ostream& print_node_values(std::ostream &os,
+                                    const KNode<T> &node) const;
+    std::ostream &print_tree(std::ostream &os, const KNode<T> &node,
+                         const std::string &prefix, bool isLeft) const;
 };
 
 template <typename T>
@@ -42,6 +50,7 @@ KDTree<T>::KDTree(std::vector<T> const& data, int dimension)
 template <typename T>
 KDTree<T>::~KDTree()
 {
+    // All the nodes will get deleted recursively 
     delete d_root;
 }
 
@@ -105,7 +114,7 @@ void KDTree<T>::buildTree(Iterator start, int size,
 }
 
 template <typename T>
-int KDTree<T>::selectSplittingDimension(int depth, int dims) 
+int KDTree<T>::selectSplittingDimension(int depth, int dims) const
 {
   return depth % dims;
 }
@@ -129,7 +138,49 @@ int KDTree<T>::sortAndSplit(Iterator start, int size, int axis)
 }
 
 template <typename T>
-void KDTree<T>::print()
+std::ostream& operator<<(std::ostream& os, const KDTree<T>& kdTree)
 {
-    print_tree<double>(std::cout, *d_root, "", false);    
+    return kdTree.print_tree(os, *kdTree.d_root, "", false);    
+}
+
+template <typename T>
+std::ostream &KDTree<T>::print_node_values(std::ostream &os,
+                                           const KNode<T> &node) const
+{
+    os << "(";
+
+    for (int idx = 0; idx < node.get_dims(); ++idx) 
+    {
+        if (idx > 0)
+            os << ",";
+
+        if (node.get_data(idx) == std::numeric_limits<int>::min())
+        {
+            os << "n/a";
+            break;
+        } else
+            os << node.get_data(idx);
+    }
+    return os << ")";
+}
+
+template <typename T>
+std::ostream &KDTree<T>::print_tree(std::ostream &os, const KNode<T> &node,
+                                    const std::string &prefix, bool isLeft) const
+{
+    os << prefix;
+    os << (isLeft ? "├──" : "└──");
+
+    // print the value of the node
+    print_node_values(os, node);
+    os << '\n';
+
+    // enter the next tree level - left and right branch
+    auto left = node.get_left();
+    if (left)
+        print_tree(os, *left, prefix + (isLeft ? "│   " : "    "), true);
+    auto right = node.get_right();
+    if (right)
+        print_tree(os, *right, prefix + (isLeft ? "│   " : "    "), false);
+    return os;
 }
