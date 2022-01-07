@@ -14,10 +14,10 @@ class KDTree
 
 public:
     KDTree(std::vector<T> const& data, int dimension);
+    ~KDTree();
     KNode<T>* getRoot();
     void print();
-    //template <typename TS>
-    //friend std::ostream &operator<<(std::ostream &os, const KDTree<TS> &kdTree);
+
 private:
     void generateKDTree(std::vector<T> const& data);
     template <typename Iterator>
@@ -30,10 +30,6 @@ private:
     int sortAndSplit(Iterator start, int size, int axis);
 };
 
-#include "kdtree.h"
-#include "utils.h"
-#include "treeprinter.h"
-
 template <typename T>
 KDTree<T>::KDTree(std::vector<T> const& data, int dimension)
 :   
@@ -41,6 +37,12 @@ KDTree<T>::KDTree(std::vector<T> const& data, int dimension)
 {
     d_size = data.size() / dimension;
     generateKDTree(data);
+}
+
+template <typename T>
+KDTree<T>::~KDTree()
+{
+    delete d_root;
 }
 
 template <typename T>
@@ -63,6 +65,7 @@ void KDTree<T>::generateKDTree(std::vector<T> const& data)
 
     std::vector<T> flatTree = unpack_risky_array(splitsTree, initialized);
     d_root = convertToKnodes<T>(std::begin(flatTree), splitsTreeSize, d_dimension, 0, 1, 0);
+    //std::cout << d_root->get_data(0) << ' ' << d_root->get_data(1) << ' ' << d_root->get_data(2) << '\n';
 }
 
 template <typename T>
@@ -129,5 +132,7 @@ int KDTree<T>::sortAndSplit(Iterator start, int size, int axis)
 template <typename T>
 void KDTree<T>::print()
 {
+    //std::cout << "test: ";
+      //std::cout << d_root->get_data(0) << '\n';
     print_tree<double>(std::cout, *d_root, "", false);    
 }

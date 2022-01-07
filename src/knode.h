@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <limits>
-
+#include <vector>
 
 /**
  * @class
@@ -32,7 +32,7 @@
 template <typename T> 
 class KNode 
 {
-    T *data;  /**< Data point associated with this node, as 1D array. */
+    std::vector<T> data;  /**< Data point associated with this node, as 1D array. */
     int dims; /**< Number of dimensions of the data point (i.e. size of `data`).
                 */
 
@@ -58,22 +58,23 @@ public:
    */
     KNode(T* d, int dms, KNode<T> *l, KNode<T> *r, bool root)
     : 
-        data{d}, 
         dims{dms}, 
         left{l}, 
         right{r}, 
         is_root{root} 
-    {}
+    {
+        data.resize(dims);
+        std::copy_n(d, dims, std::begin(data));
+    }
 
   /**
    * @brief Destroy the KNode object, and also the dataset if `is_root` is
    *         `true`.
    */
   ~KNode() {
-    if (is_root)
-      delete[] data;
-    delete left;
-    delete right;
+      std::cout << "destructing\n";
+      delete left;
+      delete right;
   }
 
   /**

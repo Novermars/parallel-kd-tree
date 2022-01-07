@@ -11,6 +11,7 @@ template <typename T>
 std::ostream &print_node_values(std::ostream &os,
                                 const KNode<T> &node) 
 {
+    //std::cout << node.get_data(0) << '\n';
     os << "(";
 
     for (int i = 0; i < node.get_dims(); i++) {
@@ -20,7 +21,10 @@ std::ostream &print_node_values(std::ostream &os,
         os << "n/a";
         break;
         } else
-        os << node.get_data(i);
+        {
+            auto tmp = node.get_data(i);
+            os << node.get_data(i);
+        }
     }
     return os << ")";
 }
