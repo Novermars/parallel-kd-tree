@@ -65,7 +65,6 @@ void KDTree<T>::generateKDTree(std::vector<T> const& data)
 
     std::vector<T> flatTree = unpack_risky_array(splitsTree, initialized);
     d_root = convertToKnodes<T>(std::begin(flatTree), splitsTreeSize, d_dimension, 0, 1, 0);
-    //std::cout << d_root->get_data(0) << ' ' << d_root->get_data(1) << ' ' << d_root->get_data(2) << '\n';
 }
 
 template <typename T>
@@ -132,7 +131,5 @@ int KDTree<T>::sortAndSplit(Iterator start, int size, int axis)
 template <typename T>
 void KDTree<T>::print()
 {
-    //std::cout << "test: ";
-      //std::cout << d_root->get_data(0) << '\n';
     print_tree<double>(std::cout, *d_root, "", false);    
 }
