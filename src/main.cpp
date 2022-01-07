@@ -12,6 +12,6 @@ int main(int argc, char **argv)
     auto [dataPoints, dim] = readFile<double>(filename);
 
     KDTree<double> tree(dataPoints, dim);
-    std::cout << tree;
+    //std::cout << tree;
     
 }

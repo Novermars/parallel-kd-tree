@@ -16,33 +16,14 @@
 # make clean	 ----> Clean the folder (removes executable/precompiled headers
 #		   	           files)
 
-.DEFAULT_GOAL := output
-FLAGS = -std=c++20 -Wall -Wextra -g -fopenmp
+.DEFAULT_GOAL := all
+FLAGS = -std=c++20 -O3 -Wall -Wextra -fopenmp
 UTILITIES = main.cpp
 COMPILER = g++
-OUT = KDTreeBuilder
+OUT = KDTreeBuilder.out
 
-compile:
-	$(COMPILER) $(FLAGS) $(ADDITIONAL_FLAGS) -O3 $(UTILITIES) $(SRC) -o $(OUT)
-
-debug:
-	$(COMPILER) $(FLAGS) $(ADDITIONAL_FLAGS) -D DEBUG -D OUTPUT $(UTILITIES) $(SRC) -o $(OUT)
-
-output:
-	$(COMPILER) $(FLAGS) $(ADDITIONAL_FLAGS) -D OUTPUT $(UTILITIES) $(SRC) -o $(OUT)
-
-time:
-	$(COMPILER) $(FLAGS) $(ADDITIONAL_FLAGS) -D TIME -O3 $(UTILITIES) $(SRC) -o $(OUT)
-
-leaks:
-	$(COMPILER) $(FLAGS) $(ADDITIONAL_FLAGS) -static-libasan -fsanitize=address -g -D DEBUG $(UTILITIES) $(SRC) -o $(OUT)
-
-mpidebug:
-	$(COMPILER) $(FLAGS) $(ADDITIONAL_FLAGS) -g -D DEBUG -D MPI_DEBUG $(UTILITIES) $(SRC) -o $(OUT)
-
-file:
-	$(COMPILER) $(FLAGS) $(ADDITIONAL_FLAGS) -D STORE_TO_FILE $(UTILITIES) $(SRC) -o $(OUT)
+all:
+	$(COMPILER) $(FLAGS) $(ADDITIONAL_FLAGS) $(UTILITIES) $(SRC) -o $(OUT)
 
 clean:
-	rm *.x
-	rm *.gch
+	rm *.out

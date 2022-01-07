@@ -122,9 +122,9 @@ void KDTree<T>::buildTree(Iterator start, int size,
 
     #pragma omp task default(shared) final(stopSpawningTasks)
     {
-    buildTree(start + splitPointIdx + 1, size - splitPointIdx - 1, depth,
-               regionWidth, regionStartIndex, branchStartingIndex + 1,
-               initialized, splitsTree);
+        buildTree(start + splitPointIdx + 1, size - splitPointIdx - 1, depth,
+                  regionWidth, regionStartIndex, branchStartingIndex + 1,
+                  initialized, splitsTree);
     }
 
     if (splitPointIdx > 0)
