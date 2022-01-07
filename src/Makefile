@@ -17,7 +17,7 @@
 #		   	           files)
 
 .DEFAULT_GOAL := output
-FLAGS = -std=c++20 -Wall -Wextra -g
+FLAGS = -std=c++20 -Wall -Wextra -g -fopenmp
 UTILITIES = main.cpp
 COMPILER = g++
 OUT = KDTreeBuilder

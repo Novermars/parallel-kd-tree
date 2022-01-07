@@ -1,7 +1,9 @@
 #pragma once
 
 #include <iosfwd>
-#include <memory>
+#include <chrono>
+#include <omp.h>
+#include <cmath>
 
 #include "knode.h"
 #include "datapoint.h"
@@ -45,7 +47,10 @@ KDTree<T>::KDTree(std::vector<T> const& data, int dimension)
     d_dimension{dimension}
 {
     d_size = data.size() / dimension;
+    auto start = std::chrono::high_resolution_clock::now();
     generateKDTree(data);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "It took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << '\n';
 }
 
 template <typename T>
@@ -71,8 +76,13 @@ void KDTree<T>::generateKDTree(std::vector<T> const& data)
 
     std::vector<bool> initialized(splitsTreeSize, false);
 
+    #pragma omp parallel
+    {
+    #pragma omp single
+    {
     buildTree(std::begin(dataPoints), d_size, 0, 1, 0, 0, initialized, splitsTree);
-
+    }
+    }
     std::vector<T> flatTree = unpack_risky_array(splitsTree, initialized);
     d_root = convertToKnodes<T>(std::begin(flatTree), splitsTreeSize, d_dimension, 0, 1, 0);
 }
@@ -103,15 +113,28 @@ void KDTree<T>::buildTree(Iterator start, int size,
     branchStartingIndex *= 2;
     depth += 1;
 
-    #pragma omp task default(shared) final(no_more_new_threads)
+    int threadNum = omp_get_thread_num();
+    int maxDepth = std::log2(omp_get_num_threads());
+    int surplusProcesses = omp_get_num_threads() - static_cast<int>(std::pow(2.0, maxDepth));
+    bool stopSpawningTasks =
+        depth > maxDepth + 1 ||
+        (depth == maxDepth + 1 && threadNum >= surplusProcesses);
+
+    #pragma omp task default(shared) final(stopSpawningTasks)
+    {
     buildTree(start + splitPointIdx + 1, size - splitPointIdx - 1, depth,
                regionWidth, regionStartIndex, branchStartingIndex + 1,
                initialized, splitsTree);
+    }
 
     if (splitPointIdx > 0)
-      buildTree(start, splitPointIdx, depth, regionWidth,
-                 regionStartIndex, branchStartingIndex,
-                 initialized, splitsTree);
+    {        
+        buildTree(start, splitPointIdx, depth, regionWidth,
+                  regionStartIndex, branchStartingIndex,
+                  initialized, splitsTree);        
+    }
+
+    #pragma omp taskwait
 
 }
 
@@ -129,6 +152,7 @@ int KDTree<T>::sortAndSplit(Iterator start, int size, int axis)
   // left region (which is the one which may parallelize with the highest
   // probability).
   int median_idx = size / 2 - ((size + 1) % 2);
+  //std::cout << "size: " << size << '\n';
 
   auto comparer = [&](DataPoint<T> const& lhs, DataPoint<T> const& rhs){ return lhs[axis] < rhs[axis];};
 
