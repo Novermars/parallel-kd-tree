@@ -34,10 +34,6 @@ private:
                    int depth, int region_width, int region_start_index, 
                    int branch_starting_index, std::vector<bool>& initialized,
                    std::vector<DataPoint<T>>& splitsTree);
-    int selectSplittingDimension(int depth, int dims) const;
-    template <typename Iterator>
-    int sortAndSplit(Iterator start, int size, int axis);
-    int biggerPowerSumOfTwo(int num);
     std::ostream& print_node_values(std::ostream &os,
                                     const KNode<T> &node) const;
     std::ostream &print_tree(std::ostream &os, const KNode<T> &node,
@@ -75,7 +71,7 @@ void KDTree<T>::generateKDTree(std::vector<T> const& data)
         }
     }
 
-    int splitsTreeSize = biggerPowerSumOfTwo(d_size);
+    int splitsTreeSize = parkdtree::utils::biggerPowerSumOfTwo(d_size);
     std::vector<DataPoint<T>> splitsTree(splitsTreeSize);
 
     std::vector<bool> initialized(splitsTreeSize, false);
@@ -89,7 +85,7 @@ void KDTree<T>::generateKDTree(std::vector<T> const& data)
     }
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "Build tree took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << '\n';
-    std::vector<T> flatTree = parkdtree::utils::unpack_risky_array(splitsTree, initialized);
+    std::vector<T> flatTree = parkdtree::utils::unpackRiskyArray(splitsTree, initialized);
     d_root = parkdtree::utils::convertToKnodes<T>(std::begin(flatTree), splitsTreeSize, d_dimension, 0, 1, 0);
 }
 
@@ -109,8 +105,8 @@ void KDTree<T>::buildTree(Iterator start, int size,
         return;
     }
 
-    int dimension = selectSplittingDimension(depth, d_dimension);
-    int splitPointIdx = sortAndSplit(start, size, dimension);
+    int dimension = parkdtree::utils::selectSplittingDimension(depth, d_dimension);
+    int splitPointIdx = parkdtree::utils::sortAndSplit<T>(start, size, dimension);
 
     splitsTree[idx] = start[splitPointIdx];
 
@@ -142,30 +138,6 @@ void KDTree<T>::buildTree(Iterator start, int size,
 
     #pragma omp taskwait
 
-}
-
-template <typename T>
-int KDTree<T>::selectSplittingDimension(int depth, int dims) const
-{
-  return depth % dims;
-}
-
-template <typename T>
-template <typename Iterator>
-int KDTree<T>::sortAndSplit(Iterator start, int size, int axis) 
-{
-    // the second part of median_idx is needed to unbalance the split towards the
-    // left region (which is the one which may parallelize with the highest
-    // probability).
-    int median_idx = size / 2 - ((size + 1) % 2);
-
-    auto comparer = [&](DataPoint<T> const& lhs, DataPoint<T> const& rhs){ return lhs[axis] < rhs[axis];};
-
-    std::nth_element(start, start + median_idx, 
-                    start + size, comparer);
-    // if size is 2 we want to return the first element (the smallest one), since
-    // it will be placed into the first empty spot in serial_split
-    return median_idx;
 }
 
 template <typename T>
@@ -214,20 +186,5 @@ std::ostream &KDTree<T>::print_tree(std::ostream &os, const KNode<T> &node,
     if (right)
         print_tree(os, *right, prefix + (isLeft ? "│   " : "    "), false);
     return os;
-}
-
-template <typename T>
-int KDTree<T>::biggerPowerSumOfTwo(int num) 
-{
-    int base = 1;
-    int sum = 0;
-
-    while (sum < num) 
-    {
-        sum += base;
-        base *= 2;
-    }
-
-    return sum;
 }
 }

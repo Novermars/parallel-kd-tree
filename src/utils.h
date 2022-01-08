@@ -19,7 +19,42 @@ namespace parkdtree::utils
  *     bigger_powersum_of_two(5) = 7 = 1 + 2 + 4
  *     bigger_powersum_of_two(3) = 3 = 1 + 2
  */
-int bigger_powersum_of_two(int n);
+
+int biggerPowerSumOfTwo(int num)
+{
+    int base = 1;
+    int sum = 0;
+
+    while (sum < num) 
+    {
+        sum += base;
+        base *= 2;
+    }
+
+    return sum;
+}
+
+int selectSplittingDimension(int depth, int dims)
+{
+  return depth % dims;
+}
+
+template <typename T, typename Iterator>
+int sortAndSplit(Iterator start, int size, int axis) 
+{
+    // the second part of median_idx is needed to unbalance the split towards the
+    // left region (which is the one which may parallelize with the highest
+    // probability).
+    int median_idx = size / 2 - ((size + 1) % 2);
+
+    auto comparer = [&](parkdtree::DataPoint<T> const& lhs, parkdtree::DataPoint<T> const& rhs){ return lhs[axis] < rhs[axis];};
+
+    std::nth_element(start, start + median_idx, 
+                    start + size, comparer);
+    // if size is 2 we want to return the first element (the smallest one), since
+    // it will be placed into the first empty spot in serial_split
+    return median_idx;
+}
 
 /**
  * @brief Transform the given array (which may contain uninitialized values)
@@ -43,7 +78,7 @@ int bigger_powersum_of_two(int n);
  */
 
 template <typename T>
-std::vector<T> unpack_risky_array(std::vector<parkdtree::DataPoint<T>> const& array, std::vector<bool> const& initialized) 
+std::vector<T> unpackRiskyArray(std::vector<parkdtree::DataPoint<T>> const& array, std::vector<bool> const& initialized) 
 {
     int numDataPts = array.size();
     int dim = array[0].size();
