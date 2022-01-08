@@ -63,19 +63,20 @@ KDTree<T>::~KDTree()
 template <typename T>
 void KDTree<T>::generateKDTree(std::vector<T> const& data)
 {
-    std::vector<DataPoint<T>> dataPoints(d_size);
+    std::vector<DataPoint<T>> dataPoints(d_size, DataPoint<T>(d_dimension));
     for (int dp = 0; dp < d_size; ++dp)
     {
-        dataPoints[dp] = { data[dp * d_dimension + 0], 
-                           data[dp * d_dimension + 1],
-                           data[dp * d_dimension + 2] };
+        for (int idx = 0; idx < d_dimension; ++idx)
+        {
+            dataPoints[dp][idx] = data[dp * d_dimension + idx];
+        }
     }
 
     int splitsTreeSize = biggerPowerSumOfTwo(d_size);
     std::vector<DataPoint<T>> splitsTree(splitsTreeSize);
 
     std::vector<bool> initialized(splitsTreeSize, false);
-
+    auto start = std::chrono::high_resolution_clock::now();
     #pragma omp parallel
     {
     #pragma omp single
@@ -83,6 +84,8 @@ void KDTree<T>::generateKDTree(std::vector<T> const& data)
     buildTree(std::begin(dataPoints), d_size, 0, 1, 0, 0, initialized, splitsTree);
     }
     }
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "Build tree took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << '\n';
     std::vector<T> flatTree = unpack_risky_array(splitsTree, initialized);
     d_root = convertToKnodes<T>(std::begin(flatTree), splitsTreeSize, d_dimension, 0, 1, 0);
 }
@@ -152,7 +155,6 @@ int KDTree<T>::sortAndSplit(Iterator start, int size, int axis)
   // left region (which is the one which may parallelize with the highest
   // probability).
   int median_idx = size / 2 - ((size + 1) % 2);
-  //std::cout << "size: " << size << '\n';
 
   auto comparer = [&](DataPoint<T> const& lhs, DataPoint<T> const& rhs){ return lhs[axis] < rhs[axis];};
 
