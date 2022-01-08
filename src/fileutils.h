@@ -17,60 +17,51 @@
     numbers found in an std::vector. The accepted dimension of each data point
     is the dimension of the data point in the first row of the file (a check
     is performed for each row though).
-
-    When there are no more rows, we copy the content of the vector on a 1D
-    array (via std::memcpy) and return that 1D array to the user.
  */
 template <typename T>
-std::tuple<std::vector<T>, int> readFile(const std::string &filename) {
-  std::ifstream file(filename);
+std::tuple<std::vector<T>, int> readDataset(const std::string &filename) {
+    std::ifstream file(filename);
 
-  // local variable which holds the last known number of dimensions per data
-  // point. used to check that all data points have the same number of
-  // components
-  int temp_dims = -1;
+    // local variable which holds the last known number of dimensions per data
+    // point. used to check that all data points have the same number of
+    // components
+    int temp_dims = -1;
 
-  constexpr char separator = ',';
+    constexpr char separator = ',';
 
-  std::vector<T> lines_buffer;
-  if (file.is_open()) {
-    std::string line;
-    while (std::getline(file, line)) {
-      std::vector<T> row_buffer;
+    std::vector<T> lines_buffer;
+    if (file.is_open()) {
+        std::string line;
+        while (std::getline(file, line)) {
+        std::vector<T> row_buffer;
 
-      int start = 0;
-      for (unsigned idx = 1; idx < line.length(); ++idx) {
-        // we found a component
-        if (line[idx] == separator) {
-          row_buffer.push_back(std::stod(line.substr(start, idx)));
-          start = idx + 1;
+        int start = 0;
+        for (unsigned idx = 1; idx < line.length(); ++idx) {
+            // we found a component
+            if (line[idx] == separator) {
+            row_buffer.push_back(std::stod(line.substr(start, idx)));
+            start = idx + 1;
+            }
         }
-      }
-      row_buffer.push_back(std::stod(line.substr(start, line.length())));
+        row_buffer.push_back(std::stod(line.substr(start, line.length())));
 
-      // we check that all the components have the same number of dimensions
-      if (temp_dims != -1 && temp_dims != static_cast<int>(row_buffer.size()))
-        throw std::invalid_argument(
-            "Invalid number of dimensions for data point number " +
-            std::to_string(lines_buffer.size()));
-      temp_dims = row_buffer.size();
+        // we check that all the components have the same number of dimensions
+        if (temp_dims != -1 && temp_dims != static_cast<int>(row_buffer.size()))
+            throw std::invalid_argument(
+                "Invalid number of dimensions for data point number " +
+                std::to_string(lines_buffer.size()));
+        temp_dims = row_buffer.size();
 
-      // we put evertthing into line_buffer
-      for (int idx = 0; idx < temp_dims; ++idx)
-        lines_buffer.push_back(row_buffer[idx]);
+        // we put everything into line_buffer
+        for (int idx = 0; idx < temp_dims; ++idx)
+            lines_buffer.push_back(row_buffer[idx]);
+        }
+    } else 
+    {
+        throw std::invalid_argument("File not found.");
     }
-    file.close();
-  } else 
-  {
-    throw std::invalid_argument("File not found.");
-  }
 
-#ifdef DEBUG
-  std::cout << "Found " << *size << " data points with " << *dims
-            << " dimensions" << std::endl;
-#endif
-
-  return {lines_buffer, temp_dims};
+    return {lines_buffer, temp_dims};
 }
 
 
