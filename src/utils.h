@@ -5,12 +5,8 @@
 #include <algorithm>
 #include <limits>
 
-/**
- * @def
- * @brief A placeholder used to fill holes in the 1D array which represents the
- *          three (this is needed for indexing reasons).
- */
-#define EMPTY_PLACEHOLDER std::numeric_limits<int>::min()
+namespace parkdtree::utils
+{
 
 /**
  * @brief Return the smallest number N such that N >= n and N is a sum of powers
@@ -24,31 +20,6 @@
  *     bigger_powersum_of_two(3) = 3 = 1 + 2
  */
 int bigger_powersum_of_two(int n);
-
-/**
- * @brief Return the biggest number N such that N <= n and N is a sum of powers
- *         of two.
- *
- * Return the biggest sum of powers of two smaller than $n$.
- *
- * Example:
- *
- *     smaler_powersum_of_two(5) = 3 = 1 + 2
- *     smaller_powersum_of_two(7) = 7 = 1 + 2 + 4
- */
-int smaller_powersum_of_two(int n);
-
-/**
- * @brief Transform the given array of data points in a 1D array such that
- *          `dims` contiguous items constitute a data point.
- *
- * @param array 1D array of data points.
- * @param size  Number of data points in the array (i.e. `length(array)`).
- * @param dims  Number of components for each data point.
- * @return data_type* A 1D array of size `size*dims`.
- */
-template <typename T>
-std::vector<T> unpack_array(std::vector<DataPoint<T>> const& array);
 
 /**
  * @brief Transform the given array (which may contain uninitialized values)
@@ -72,7 +43,7 @@ std::vector<T> unpack_array(std::vector<DataPoint<T>> const& array);
  */
 
 template <typename T>
-std::vector<T> unpack_risky_array(std::vector<DataPoint<T>> const& array, std::vector<bool> const& initialized) 
+std::vector<T> unpack_risky_array(std::vector<parkdtree::DataPoint<T>> const& array, std::vector<bool> const& initialized) 
 {
     int numDataPts = array.size();
     int dim = array[0].size();
@@ -93,30 +64,6 @@ std::vector<T> unpack_risky_array(std::vector<DataPoint<T>> const& array, std::v
 }
 
 /**
- * @brief Rearrange `branch1`, `branch2` into a single array.
- *
- * Rearranges `branch1` and `branch2` into `dest` in such a way that:
- *
- *  1. We first take 1 node from branch1 and 1 node from branch2,
- *  2. Then 2 nodes from `branch1`, and 2 nodes from `branch2`;
- *  3. Then 4 nodes from `branch1`, and 4 nodes from `branch2`;
- *  4. And so on..
- *
- * @param dest    1D array in which we are going to store the content of
- *                  `branch1`, `branch2`.
- * @param branch1 The first branch, from which we are going to take nodes first.
- * @param branch1 The second branch, from which we are going to take nodes after
- *                  the first.
- * @param branches_size Size of `branch1` and `branch2` (number of data points,
- *                        **not** number of data points times the number of
- *                        dimensions).
- * @param dims    Number of dimensions for each data point.
- */
-template <typename T>
-void rearrange_branches(T *dest, T *branch1, T *branch2,
-                        int branches_size, int dims);
-
-/**
  * @brief Convert the given tree to a kind-of linked list structure. This
  * assumes that the given size is a powersum of two.
  *
@@ -132,7 +79,7 @@ void rearrange_branches(T *dest, T *branch1, T *branch2,
  *                      recursive call.
  */
 template <typename T, typename Iterator>
-KNode<T> *convertToKnodes(Iterator tree, int size, int dims,
+parkdtree::KNode<T> *convertToKnodes(Iterator tree, int size, int dims,
                                     int current_level_start,
                                     int current_level_nodes, int start_offset) 
 {
@@ -146,12 +93,12 @@ KNode<T> *convertToKnodes(Iterator tree, int size, int dims,
         auto right = convertToKnodes<T>(tree, size, dims, next_level_start,
                                     next_level_nodes, next_start_offset + 1);
 
-        return new KNode<T>(&(*tree) + current_level_start +
+        return new parkdtree::KNode<T>(&(*tree) + current_level_start +
                                         start_offset * dims,
-                                    dims, left, right, current_level_start == 0);
+                                        dims, left, right, current_level_start == 0);
     } else
-        return new KNode<T>(&(*tree) + current_level_start +
+        return new parkdtree::KNode<T>(&(*tree) + current_level_start +
                                         start_offset * dims,
-                                    dims, nullptr, nullptr, false);
+                                        dims, nullptr, nullptr, false);
 }
-
+}

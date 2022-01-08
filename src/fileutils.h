@@ -11,6 +11,8 @@
 #include <tuple>
 
 #include "fileutils.h"
+namespace parkdtree::utils
+{
 
 /*
     This function reads the file row by row, and for each row stores the
@@ -66,7 +68,7 @@ std::tuple<std::vector<T>, int> readDataset(const std::string &filename) {
 
 
 template <typename T>
-void write_file(const std::string &filename, KNode<T> *root, int dims)
+void write_file(const std::string &filename, parkdtree::KNode<T> *root, int dims)
 {
     std::ofstream outdata;
     outdata.open(filename, std::fstream::out);
@@ -74,11 +76,11 @@ void write_file(const std::string &filename, KNode<T> *root, int dims)
         throw std::invalid_argument("File not found.");
     }
 
-    std::queue<KNode<T> *> to_visit;
+    std::queue<parkdtree::KNode<T> *> to_visit;
     to_visit.push(root);
 
     while (to_visit.size() > 0) {
-        KNode<T> *node = to_visit.front();
+        parkdtree::KNode<T> *node = to_visit.front();
         to_visit.pop();
 
         for (int idx = 0; idx < dims; ++idx) {
@@ -94,4 +96,5 @@ void write_file(const std::string &filename, KNode<T> *root, int dims)
 
         outdata << '\n';
     }
+}
 }

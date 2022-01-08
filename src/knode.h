@@ -4,6 +4,9 @@
 #include <limits>
 #include <vector>
 
+namespace parkdtree
+{
+
 /**
  * @class
  * @brief A node of a k-d tree.
@@ -95,3 +98,4 @@ public:
    */
   KNode<T> *get_right() const { return right; }
 };
+}

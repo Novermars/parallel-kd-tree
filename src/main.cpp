@@ -9,9 +9,9 @@ int main(int argc, char **argv)
         argc > 1 ? argv[1] : "../benchmark/benchmark1.csv";
 
     // Read the dataset as a 1D array, dim consecutive items of dt are a data point
-    auto [dataPoints, dim] = readDataset<double>(filename);
+    auto [dataPoints, dim] = parkdtree::utils::readDataset<double>(filename);
 
-    KDTree<double> tree(dataPoints, dim);
+    parkdtree::KDTree<double> tree(dataPoints, dim);
     std::cout << tree;
     
 }
