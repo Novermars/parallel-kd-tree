@@ -85,8 +85,8 @@ void KDTree<T>::generateKDTree(std::vector<T> const& data)
     }
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "Build tree took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << '\n';
-    std::vector<T> flatTree = parkdtree::utils::unpackRiskyArray(splitsTree, initialized);
-    d_root = parkdtree::utils::convertToKnodes<T>(std::begin(flatTree), splitsTreeSize, d_dimension, 0, 1, 0);
+    std::vector<T> flatTree = utils::unpackRiskyArray(splitsTree, initialized);
+    d_root = utils::convertToKnodes<T>(std::begin(flatTree), splitsTreeSize, d_dimension, 0, 1, 0);
 }
 
 template <typename T>
@@ -105,8 +105,8 @@ void KDTree<T>::buildTree(Iterator start, int size,
         return;
     }
 
-    int dimension = parkdtree::utils::selectSplittingDimension(depth, d_dimension);
-    int splitPointIdx = parkdtree::utils::sortAndSplit<T>(start, size, dimension);
+    int dimension = utils::selectSplittingDimension(depth, d_dimension);
+    int splitPointIdx = utils::sortAndSplit<T>(start, size, dimension);
 
     splitsTree[idx] = start[splitPointIdx];
 
